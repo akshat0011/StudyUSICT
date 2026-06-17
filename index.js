@@ -1,5 +1,7 @@
+require("dotenv").config();
 const express = require("express");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const db = require("./db");
 
 const app = express();
@@ -41,6 +43,33 @@ app.post("/signup", (req, res) => {
     }
     res.status(500).json({ error: "Something went wrong. Please try again." });
   }
+});
+
+// log in to an existing account
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required." });
+  }
+
+  const user = db.prepare("SELECT * FROM users WHERE email = ?").get(email);
+
+  if (!user || !bcrypt.compareSync(password, user.password)) {
+    return res.status(401).json({ error: "Invalid email or password." });
+  }
+
+  const token = jwt.sign(
+    { userId: user.id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  res.json({
+    message: "Logged in successfully!",
+    token: token,
+    user: { id: user.id, name: user.name, email: user.email, role: user.role },
+  });
 });
 
 app.listen(PORT, () => {
