@@ -32,6 +32,14 @@ function requireAuth(req, res, next) {
   }
 }
 
+// NEW: gate that only lets admins through (use it AFTER requireAuth)
+function requireAdmin(req, res, next) {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ error: "Admins only." });
+  }
+  next();
+}
+
 app.get("/", (req, res) => {
   res.send("Hello from the StudyIPU backend!");
 });
@@ -112,7 +120,7 @@ app.get("/materials", requireAuth, (req, res) => {
 });
 
 // NEW: add a new study material (must be logged in)
-app.post("/materials", requireAuth, (req, res) => {
+app.post("/materials", requireAuth, requireAdmin, (req, res) => {
   const { title, subject, type, url } = req.body;
 
   if (!title || !subject || !url) {
