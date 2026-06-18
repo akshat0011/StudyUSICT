@@ -38,8 +38,8 @@ function LoginPage({ onLogin }) {
         setMode("login");
       } else {
         localStorage.setItem("token", data.token);
-        onLogin(data.user); // tell App who logged in
-        navigate("/");       // send them to the homepage
+        onLogin(data.user);
+        navigate("/");
       }
     } catch (err) {
       setMessage("Could not reach the server. Is it running?");
@@ -47,43 +47,45 @@ function LoginPage({ onLogin }) {
   }
 
   return (
-    <div className="auth-page">
-      <h2>{mode === "signup" ? "Create an account" : "Log in"}</h2>
+    <div className="auth-wrapper">
+      <div className="auth-card">
+        <h2>{mode === "signup" ? "Create your account" : "Welcome back"}</h2>
 
-      <form onSubmit={handleSubmit}>
-        {mode === "signup" && (
+        <form onSubmit={handleSubmit}>
+          {mode === "signup" && (
+            <input
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          )}
           <input
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
-        )}
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">{mode === "signup" ? "Sign up" : "Log in"}</button>
-      </form>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button type="submit">{mode === "signup" ? "Sign up" : "Log in"}</button>
+        </form>
 
-      <p>{message}</p>
+        <p className="auth-message">{message}</p>
 
-      <button
-        className="link-button"
-        onClick={() => setMode(mode === "signup" ? "login" : "signup")}
-      >
-        {mode === "signup"
-          ? "Already have an account? Log in"
-          : "Need an account? Sign up"}
-      </button>
+        <button
+          className="link-button"
+          onClick={() => setMode(mode === "signup" ? "login" : "signup")}
+        >
+          {mode === "signup"
+            ? "Already have an account? Log in"
+            : "Need an account? Sign up"}
+        </button>
+      </div>
     </div>
   );
 }

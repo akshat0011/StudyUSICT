@@ -41,25 +41,27 @@ function App() {
     return <p>Loading...</p>;
   }
 
-  return (
+return (
     <div>
       <nav className="navbar">
-        <Link to="/"><Logo /></Link>
-        <div className="nav-links">
-          <Link to="/materials">Materials</Link>
-          {user ? (
-            <>
-              <span className="nav-user">Hi, {user.name}</span>
-              <button onClick={handleLogout}>Log out</button>
-            </>
-          ) : (
-            <Link to="/login">Log in</Link>
-          )}
+        <div className="container"> {/* NEW: centers the bar's contents */}
+          <Link to="/"><Logo /></Link>
+          <div className="nav-links">
+            {/* CHANGED: Materials link removed from the top bar */}
+            {user ? (
+              <>
+                <span className="nav-user">Hi, {user.name}</span>
+                <button className="nav-logout" onClick={handleLogout}>Log out</button>
+              </>
+            ) : (
+              <Link to="/login" className="nav-login">Log in</Link>
+            )}
+          </div>
         </div>
       </nav>
 
       <Routes>
-        <Route path="/" element={<HomePage user={user} />} />
+        <Route path="/" element={<HomePage />} /> {/* CHANGED: no user prop needed now */}
         <Route path="/login" element={<LoginPage onLogin={setUser} />} />
         <Route path="/materials" element={<MaterialsPage user={user} />} />
       </Routes>
