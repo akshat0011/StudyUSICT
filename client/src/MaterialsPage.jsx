@@ -1,29 +1,39 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router";
 
-function MaterialsPage({ user }) {  // NEW: receives the logged-in user as a prop
+const filters = [
+  { label: "All", value: "all" },
+  { label: "Notes", value: "notes" },
+  { label: "PYQs", value: "pyq" },
+  { label: "Videos", value: "playlist" },
+];
+
+function typeLabel(type) {
+  if (type === "pyq") return "PYQ";
+  if (type === "playlist") return "Video";
+  return "Notes";
+}
+
+function MaterialsPage({ user }) {
   const [materials, setMaterials] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeType = searchParams.get("type") || "all";
 
-  // NEW: state for the add-material form
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [type, setType] = useState("notes");
   const [url, setUrl] = useState("");
-  const [formMessage, setFormMessage] = useState("");
+  const [message, setMessage] = useState("");
 
-  // CHANGED: pulled the fetch into its own function so we can call it again after adding
   async function loadMaterials() {
-    const token = localStorage.getItem("token");
     try {
-      const response = await fetch("http://localhost:3000/materials", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch("http://localhost:3000/materials");
       const data = await response.json();
-      setMaterials(data.materials);
+      const list = Array.isArray(data) ? data : (data.materials || []);
+      setMaterials(list);
     } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+      setMessage("Could not load materials. Is the server running?");
     }
   }
 
@@ -31,11 +41,9 @@ function MaterialsPage({ user }) {  // NEW: receives the logged-in user as a pro
     loadMaterials();
   }, []);
 
-  // NEW: handle submitting the add-material form
   async function handleAdd(event) {
     event.preventDefault();
-    setFormMessage("");
-
+    setMessage("");
     const token = localStorage.getItem("token");
     try {
       const response = await fetch("http://localhost:3000/materials", {
@@ -47,73 +55,87 @@ function MaterialsPage({ user }) {  // NEW: receives the logged-in user as a pro
         body: JSON.stringify({ title, subject, type, url }),
       });
       const data = await response.json();
-
       if (!response.ok) {
-        setFormMessage(data.error);
+        setMessage(data.error || "Could not add material.");
         return;
       }
-
       setTitle("");
       setSubject("");
       setUrl("");
-      setFormMessage("Material added!");
-      loadMaterials(); // refresh the list so the new one shows
+      loadMaterials();
     } catch (err) {
-      setFormMessage("Could not reach the server.");
+      setMessage("Could not add material.");
     }
   }
 
-  if (loading) {
-    return <p>Loading materials...</p>;
-  }
+  const visibleMaterials = materials.filter((m) => {
+    const matchesType = activeType === "all" || m.type === activeType;
+    const text = search.toLowerCase();
+    const matchesSearch =
+      text === "" ||
+      (m.title || "").toLowerCase().includes(text) ||
+      (m.subject || "").toLowerCase().includes(text);
+    return matchesType && matchesSearch;
+  });
 
   return (
-    <div>
-      <h2>Study Materials</h2>
+    <div className="container materials-page">
+      <h1 className="materials-title">Study Materials</h1>
 
-      {/* NEW: only admins see this form */}
+      <div className="filter-tabs">
+        {filters.map((f) => (
+          <button
+            key={f.value}
+            className={activeType === f.value ? "filter-tab active" : "filter-tab"}
+            onClick={() => setSearchParams(f.value === "all" ? {} : { type: f.value })}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      <input
+        className="materials-search"
+        placeholder="Search by subject or title..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
       {user?.role === "admin" && (
-        <form onSubmit={handleAdd}>
+        <form className="add-form" onSubmit={handleAdd}>
           <h3>Add a material</h3>
-          <input
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <input
-            placeholder="Subject"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-          />
+          <input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <input placeholder="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} />
           <select value={type} onChange={(e) => setType(e.target.value)}>
             <option value="notes">Notes</option>
             <option value="pyq">PYQ</option>
-            <option value="playlist">Playlist</option>
+            <option value="playlist">Video playlist</option>
           </select>
-          <input
-            placeholder="URL"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-          <button type="submit">Add</button>
-          <p>{formMessage}</p>
+          <input placeholder="URL (link to the file or playlist)" value={url} onChange={(e) => setUrl(e.target.value)} />
+          <button type="submit">Add material</button>
         </form>
       )}
 
-      {materials.length === 0 ? (
-        <p>No materials yet.</p>
-      ) : (
-        <ul>
-          {materials.map((material) => (
-            <li key={material.id}>
-              <strong>{material.title}</strong> — {material.subject} ({material.type})
-              <br />
-              <a href={material.url} target="_blank" rel="noreferrer">
-                Open
-              </a>
-            </li>
-          ))}
-        </ul>
+      {message && <p className="auth-message">{message}</p>}
+
+      <div className="materials-grid">
+        {visibleMaterials.map((m) => (
+          <a
+            key={m.id}
+            href={m.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="material-card"
+          >
+            <span className="material-type">{typeLabel(m.type)}</span>
+            <h3>{m.title}</h3>
+            <p>{m.subject}</p>
+          </a>
+        ))}
+      </div>
+
+      {visibleMaterials.length === 0 && (
+        <p className="empty-note">No materials here yet.</p>
       )}
     </div>
   );

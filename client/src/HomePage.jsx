@@ -5,13 +5,13 @@ const sections = [
   {
     title: "Notes",
     desc: "Subject-wise notes and summaries for every semester.",
-    to: "/materials",
+    to: "/materials?type=notes",
     icon: <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>,
   },
   {
     title: "PYQs",
     desc: "Previous year question papers to practice with.",
-    to: "/materials",
+    to: "/materials?type=pyq",
     icon: <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="2" width="13" height="13" rx="2"/><path d="M3 8v11a2 2 0 0 0 2 2h11"/></svg>,
   },
   {
@@ -23,7 +23,7 @@ const sections = [
   {
     title: "Video Lectures",
     desc: "Curated YouTube playlists for each topic.",
-    to: "/materials",
+    to: "/materials?type=playlist",
     icon: <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4z" fill="currentColor" stroke="none"/></svg>,
   },
   {
