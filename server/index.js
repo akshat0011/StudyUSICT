@@ -111,8 +111,8 @@ app.get("/me", requireAuth, (req, res) => {
   res.json({ user });
 });
 
-// NEW: list all study materials (must be logged in)
-app.get("/materials", requireAuth, (req, res) => {
+// NEW: list all study materials
+app.get("/materials", (req, res) => {
   const materials = db
     .prepare("SELECT * FROM materials ORDER BY created_at DESC")
     .all();

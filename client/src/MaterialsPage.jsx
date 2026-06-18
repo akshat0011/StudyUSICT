@@ -72,7 +72,7 @@ function MaterialsPage({ user }) {  // NEW: receives the logged-in user as a pro
       <h2>Study Materials</h2>
 
       {/* NEW: only admins see this form */}
-      {user.role === "admin" && (
+      {user?.role === "admin" && (
         <form onSubmit={handleAdd}>
           <h3>Add a material</h3>
           <input
