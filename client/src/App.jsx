@@ -78,7 +78,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<DashboardPage />} />
-        <Route path="/resources" element={<ResourceHubPage />} />
+        <Route path="/resources" element={<ResourceHubPage user={user} />} />
         <Route path="/tutor" element={<AITutorPage />} />
         <Route path="/careers" element={<CareersPage />} />
         <Route path="/gpa" element={<GpaPage />} />

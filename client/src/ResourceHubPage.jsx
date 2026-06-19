@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const branches = ["CSE", "IT", "ECE", "AIML", "AIDS"];
 
@@ -18,6 +18,11 @@ const contentTabs = [
   { id: "lectures", label: "Lectures" },
   { id: "papers", label: "IPU Past Papers (PYQs)" },
 ];
+
+// Each content tab maps to a material "type" stored in the database
+const tabTypeMap = { notes: "notes", lectures: "playlist", papers: "pyq" };
+// The reverse — which tab to open after adding a given material type
+const typeTabMap = { notes: "notes", playlist: "lectures", pyq: "papers" };
 
 const subjects = [
   {
@@ -46,14 +51,90 @@ const subjects = [
   },
 ];
 
-function ResourceHubPage() {
+function ResourceHubPage({ user }) {
   const [branch, setBranch] = useState("CSE");
   const [semester, setSemester] = useState("3");
   const [selectedCode, setSelectedCode] = useState("CIC-201");
   const [activeTab, setActiveTab] = useState("syllabus");
 
+  // Materials loaded from the database
+  const [materials, setMaterials] = useState([]);
+
+  // Popup state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formType, setFormType] = useState("notes");
+  const [formTitle, setFormTitle] = useState("");
+  const [formUrl, setFormUrl] = useState("");
+  const [formError, setFormError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  // Load every material once, when the page first opens
+  useEffect(() => {
+    fetch("http://localhost:3000/materials")
+      .then((res) => res.json())
+      .then((data) => setMaterials(Array.isArray(data) ? data : data.materials || []))
+      .catch(() => {});
+  }, []);
+
   const selected = subjects.find((s) => s.code === selectedCode);
   const activeLabel = contentTabs.find((t) => t.id === activeTab).label;
+
+  // The materials belonging to the open subject AND the open tab
+  const tabType = tabTypeMap[activeTab]; // undefined while on "syllabus"
+  const tabMaterials = tabType
+    ? materials.filter((m) => m.subject === selected.code && m.type === tabType)
+    : [];
+
+  function openAddModal() {
+    setFormType(tabTypeMap[activeTab] || "notes");
+    setFormTitle("");
+    setFormUrl("");
+    setFormError("");
+    setIsModalOpen(true);
+  }
+
+  async function handlePublish() {
+    setFormError("");
+    if (!formTitle.trim() || !formUrl.trim()) {
+      setFormError("Please fill in both the title and the link.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:3000/materials", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: formTitle.trim(),
+          url: formUrl.trim(),
+          type: formType,
+          subject: selected.code,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setFormError(data.error || "Could not publish. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+      // Reload the list so the new material shows up
+      const listRes = await fetch("http://localhost:3000/materials");
+      const listData = await listRes.json();
+      setMaterials(Array.isArray(listData) ? listData : listData.materials || []);
+      setActiveTab(typeTabMap[formType]); // jump to the tab we just added to
+      setIsModalOpen(false);
+      setFormTitle("");
+      setFormUrl("");
+      setSubmitting(false);
+    } catch (err) {
+      setFormError("Couldn't reach the server. Is the backend running?");
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="page">
@@ -129,6 +210,11 @@ function ResourceHubPage() {
                 {t.label}
               </button>
             ))}
+            {user?.role === "admin" && (
+              <button className="append-btn" onClick={openAddModal}>
+                <span className="append-plus">+</span> Append Resource
+              </button>
+            )}
           </div>
 
           {activeTab === "syllabus" ? (
@@ -145,12 +231,95 @@ function ResourceHubPage() {
               </div>
             </div>
           ) : (
-            <div className="tab-empty">
-              {activeLabel} for {selected.name} will be added here soon.
+            <div>
+              <div className="units-label">{activeLabel}</div>
+              {tabMaterials.length === 0 ? (
+                <div className="tab-empty">
+                  No {activeLabel} added for {selected.name} yet.
+                  {user?.role === "admin" && " Click “Append Resource” to add the first one."}
+                </div>
+              ) : (
+                <div className="resource-list">
+                  {tabMaterials.map((m) => (
+                    <a
+                      key={m.id}
+                      href={m.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="resource-row"
+                    >
+                      <div className="resource-info">
+                        <span className="resource-title">{m.title}</span>
+                        <span className="resource-url">{m.url}</span>
+                      </div>
+                      <span className="resource-open">Open ↗</span>
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </main>
       </div>
+
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-header-left">
+                <span className="modal-icon">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h5l2 2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
+                </span>
+                <div>
+                  <div className="modal-title">Add Subject Resource Material</div>
+                  <div className="modal-sub">Subject: {selected.name} ({selected.code})</div>
+                </div>
+              </div>
+              <button className="modal-close" onClick={() => setIsModalOpen(false)} aria-label="Close">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div className="modal-field-label">Material Classification Category</div>
+              <div className="modal-cats">
+                <button className={formType === "notes" ? "modal-cat active" : "modal-cat"} onClick={() => setFormType("notes")}>Drive Note</button>
+                <button className={formType === "playlist" ? "modal-cat active" : "modal-cat"} onClick={() => setFormType("playlist")}>Video/Course</button>
+                <button className={formType === "pyq" ? "modal-cat active" : "modal-cat"} onClick={() => setFormType("pyq")}>IPU PYQ Paper</button>
+              </div>
+
+              <div className="modal-field-label">Resource Title Name</div>
+              <input
+                className="modal-input"
+                type="text"
+                value={formTitle}
+                placeholder="e.g., Unit 2 Reference Handouts"
+                onChange={(e) => setFormTitle(e.target.value)}
+              />
+
+              <div className="modal-field-label">Hyperlink URL Link</div>
+              <input
+                className="modal-input"
+                type="text"
+                value={formUrl}
+                placeholder="https://drive.google.com/... or https://youtube.com/..."
+                onChange={(e) => setFormUrl(e.target.value)}
+              />
+
+              {formError && <p className="modal-error">{formError}</p>}
+
+              <div className="modal-divider"></div>
+
+              <div className="modal-actions">
+                <button className="modal-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                <button className="modal-publish" onClick={handlePublish} disabled={submitting}>
+                  <span className="append-plus">+</span> {submitting ? "Publishing..." : "Publish Material"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
