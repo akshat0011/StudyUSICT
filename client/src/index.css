@@ -758,3 +758,5 @@ cursor: pointer;
 }
 
 .logout-btn:hover { color: var(--text); background-color: var(--surface-2); }
+
+.google-login-wrap { display: flex; justify-content: center; }

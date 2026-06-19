@@ -1,4 +1,6 @@
 require("dotenv").config();
+const {OAuth2Client} = require("google-auth-library");
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -100,6 +102,50 @@ app.post("/login", (req, res) => {
     token: token,
     user: { id: user.id, name: user.name, email: user.email, role: user.role },
   });
+});
+
+app.post("/auth/google", async (req, res) => {
+  const { credential } = req.body;
+  if (!credential) {
+    return res.status(400).json({ error: "Missing Google credential." });
+  }
+
+  try {
+    // Ask Google to confirm this token is genuine and meant for our app
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const profile = ticket.getPayload();
+    const email = profile.email;
+    const name = profile.name || email.split("@")[0];
+
+    // Find an existing account for this email...
+    let user = db.prepare("SELECT * FROM users WHERE email = ?").get(email);
+
+    // ...or create a new student account (no password — they'll use Google)
+    if (!user) {
+      const result = db
+        .prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)")
+        .run(name, email, "google-oauth", "student");
+      user = db.prepare("SELECT * FROM users WHERE id = ?").get(result.lastInsertRowid);
+    }
+
+    // Issue OUR own token, exactly like a normal login does
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    });
+  } catch (err) {
+    console.error("Google sign-in failed:", err);
+    res.status(401).json({ error: "Google sign-in failed. Please try again." });
+  }
 });
 
 // protected: returns the logged-in user's own profile
