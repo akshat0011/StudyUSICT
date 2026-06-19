@@ -1,13 +1,13 @@
-import logo from "./assets/logo.png";
+import { Link } from "react-router";
+import logoLight from "./assets/logo.png";
+import logoDark from "./assets/logo-dark.png";
 
 function Logo() {
   return (
-    <div className="logo">
-      <img src={logo} alt="StudyUSICT" className="logo-img" />
-      <div>
-        <div className="logo-text">Study<span className="accent">USICT</span></div>
-      </div>
-    </div>
+    <Link to="/" className="logo-link">
+      <img src={logoLight} alt="StudyUSICT" className="logo-img logo-light" />
+      <img src={logoDark} alt="StudyUSICT" className="logo-img logo-dark" />
+    </Link>
   );
 }
 
