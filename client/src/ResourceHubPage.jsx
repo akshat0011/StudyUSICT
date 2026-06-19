@@ -68,6 +68,11 @@ function ResourceHubPage({ user }) {
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Which syllabus units are checked off (remembered in the browser)
+  const [checked, setChecked] = useState(() =>
+    JSON.parse(localStorage.getItem("usict-progress") || "{}")
+  );
+
   // Load every material once, when the page first opens
   useEffect(() => {
     fetch("http://localhost:3000/materials")
@@ -75,6 +80,11 @@ function ResourceHubPage({ user }) {
       .then((data) => setMaterials(Array.isArray(data) ? data : data.materials || []))
       .catch(() => {});
   }, []);
+
+  // Save progress whenever a box is ticked or unticked
+  useEffect(() => {
+    localStorage.setItem("usict-progress", JSON.stringify(checked));
+  }, [checked]);
 
   const selected = subjects.find((s) => s.code === selectedCode);
   const activeLabel = contentTabs.find((t) => t.id === activeTab).label;
@@ -84,6 +94,16 @@ function ResourceHubPage({ user }) {
   const tabMaterials = tabType
     ? materials.filter((m) => m.subject === selected.code && m.type === tabType)
     : [];
+
+  // How many units of the open subject are checked off
+  const doneCount = selected.units.filter(
+    (u, i) => checked[`${selected.code}-${i}`]
+  ).length;
+
+  function toggleUnit(code, index) {
+    const key = `${code}-${index}`;
+    setChecked((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
 
   function openAddModal() {
     setFormType(tabTypeMap[activeTab] || "notes");
@@ -121,11 +141,10 @@ function ResourceHubPage({ user }) {
         setSubmitting(false);
         return;
       }
-      // Reload the list so the new material shows up
       const listRes = await fetch("http://localhost:3000/materials");
       const listData = await listRes.json();
       setMaterials(Array.isArray(listData) ? listData : listData.materials || []);
-      setActiveTab(typeTabMap[formType]); // jump to the tab we just added to
+      setActiveTab(typeTabMap[formType]);
       setIsModalOpen(false);
       setFormTitle("");
       setFormUrl("");
@@ -136,7 +155,7 @@ function ResourceHubPage({ user }) {
     }
   }
 
-async function handleDelete(id) {
+  async function handleDelete(id) {
     const confirmed = window.confirm("Remove this resource? This can't be undone.");
     if (!confirmed) return;
     try {
@@ -239,15 +258,33 @@ async function handleDelete(id) {
 
           {activeTab === "syllabus" ? (
             <div>
-              <div className="units-label">Official Syllabus Units</div>
+              <div className="units-head">
+                <div>
+                  <div className="units-label">Official Syllabus Units</div>
+                  <p className="units-sub">Track your exam preparation progress by checking off units below.</p>
+                </div>
+                <span className="units-progress">{doneCount}/{selected.units.length} Completed</span>
+              </div>
               <div className="units-grid">
-                {selected.units.map((u, i) => (
-                  <div className="unit-card" key={u.title}>
-                    <span className="unit-num">{String(i + 1).padStart(2, "0")}</span>
-                    <h4 className="unit-title">{u.title}</h4>
-                    <p className="unit-desc">{u.desc}</p>
-                  </div>
-                ))}
+                {selected.units.map((u, i) => {
+                  const done = !!checked[`${selected.code}-${i}`];
+                  return (
+                    <div className={done ? "unit-card done" : "unit-card"} key={u.title}>
+                      <button
+                        type="button"
+                        className={done ? "unit-check checked" : "unit-check"}
+                        onClick={() => toggleUnit(selected.code, i)}
+                        aria-label="Mark unit complete"
+                      >
+                        {done && (
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                        )}
+                      </button>
+                      <h4 className="unit-title">{u.title}</h4>
+                      <p className="unit-desc">{u.desc}</p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ) : (
