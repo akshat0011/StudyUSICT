@@ -921,3 +921,5 @@ cursor: pointer;
 }
 .modal-publish:hover { opacity: 0.92; }
 .modal-publish:disabled { opacity: 0.6; cursor: default; }
+
+.logo-img { height: 40px; width: auto; display: block; }
