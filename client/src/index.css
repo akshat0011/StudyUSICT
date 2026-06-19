@@ -314,3 +314,68 @@ select:focus { outline: none; border-color: var(--accent); }
 @media (max-width: 900px) {
   .gpa-grid { grid-template-columns: 1fr; }
 }
+
+/* ===== CGPA converter ===== */
+.cgpa-input-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+  margin: 0.5rem 0 1.25rem;
+}
+.cgpa-number {
+  flex: 1;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  color: var(--text);
+  background-color: var(--surface);
+}
+.cgpa-number:focus { outline: none; border-color: var(--accent); }
+.cgpa-result {
+  background-color: var(--navy);
+  color: #fff;
+  border-radius: 12px;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.cgpa-slider {
+  width: 100%;
+  margin-bottom: 1.75rem;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.formula-box {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.25rem;
+}
+.formula-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.6rem;
+}
+.formula-intro { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.85rem; }
+.formula-eq {
+  font-family: var(--font-mono);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: center;
+  margin-bottom: 0.85rem;
+}
+.formula-example { font-size: 0.85rem; color: var(--text-muted); }

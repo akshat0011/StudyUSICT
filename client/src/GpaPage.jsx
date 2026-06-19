@@ -22,6 +22,7 @@ const initialSubjects = [
 
 function GpaPage() {
   const [subjects, setSubjects] = useState(initialSubjects);
+  const [cgpa, setCgpa] = useState("8.5"); // NEW
 
   function updateSubject(id, changes) {
     setSubjects(subjects.map((s) => (s.id === id ? { ...s, ...changes } : s)));
@@ -42,6 +43,8 @@ function GpaPage() {
     weighted += Number(s.credits) * Number(s.grade);
   }
   const sgpa = totalCredits === 0 ? "0.00" : (weighted / totalCredits).toFixed(2);
+
+  const percentage = (Number(cgpa) * 9.5).toFixed(2); // NEW
 
   return (
     <div className="page">
@@ -97,6 +100,56 @@ function GpaPage() {
               <div className="sgpa-label">Computed Semester SGPA</div>
               <div className="sgpa-value">{sgpa}</div>
             </div>
+          </div>
+        </section>
+
+        {/* NEW: CGPA → percentage card */}
+        <section className="gpa-card">
+          <div className="gpa-card-head">
+            <h2 className="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2 3 6 3s6-2 6-3v-5"/></svg>
+              IPU CGPA to Percentage
+            </h2>
+          </div>
+
+          <p className="gpa-desc">
+            Interview placement forms always request your aggregated percentage. Enter your
+            official GGSIPU cumulative CGPA to calculate percentage instantly.
+          </p>
+
+          <label className="field-label">Aggregated CGPA (4.00 - 10.00)</label>
+          <div className="cgpa-input-row">
+            <input
+              className="cgpa-number"
+              type="number"
+              min="4"
+              max="10"
+              step="0.01"
+              value={cgpa}
+              onChange={(e) => setCgpa(e.target.value)}
+            />
+            <div className="cgpa-result">{percentage} %</div>
+          </div>
+
+          <input
+            className="cgpa-slider"
+            type="range"
+            min="4"
+            max="10"
+            step="0.01"
+            value={cgpa}
+            onChange={(e) => setCgpa(e.target.value)}
+          />
+
+          <div className="formula-box">
+            <div className="formula-label">Formula Directive</div>
+            <p className="formula-intro">
+              As per GGSIPU standard criteria (Indraprastha University regulation parameters):
+            </p>
+            <div className="formula-eq">Percentage (%) = CGPA × 9.5</div>
+            <p className="formula-example">
+              Example: A CGPA of 8.50 converts to 80.75% (8.5 × 9.5).
+            </p>
           </div>
         </section>
       </div>
