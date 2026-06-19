@@ -80,7 +80,7 @@ function App() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/resources" element={<ResourceHubPage user={user} />} />
         <Route path="/tutor" element={<AITutorPage />} />
-        <Route path="/careers" element={<CareersPage />} />
+        <Route path="/careers" element={<CareersPage user={user} />} />
         <Route path="/gpa" element={<GpaPage />} />
         <Route path="/login" element={<LoginPage onLogin={setUser} />} />
       </Routes>

@@ -194,6 +194,36 @@ app.delete("/materials/:id", requireAuth, requireAdmin, (req, res) => {
   res.json({ success: true });
 });
 
+// All jobs (public)
+app.get("/jobs", (req, res) => {
+  const jobs = db.prepare("SELECT * FROM jobs ORDER BY created_at DESC").all();
+  res.json(jobs);
+});
+
+// Post a job (admin only)
+app.post("/jobs", requireAuth, requireAdmin, (req, res) => {
+  const { title, company, type, description, location, salary, url, tags } = req.body;
+  if (!title || !company) {
+    return res.status(400).json({ error: "Title and company are required." });
+  }
+  const result = db
+    .prepare(
+      "INSERT INTO jobs (title, company, type, description, location, salary, url, tags, posted_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    )
+    .run(title, company, type || "fulltime", description || "", location || "", salary || "", url || "", tags || "", req.user.userId);
+  const job = db.prepare("SELECT * FROM jobs WHERE id = ?").get(result.lastInsertRowid);
+  res.json(job);
+});
+
+// Delete a job (admin only)
+app.delete("/jobs/:id", requireAuth, requireAdmin, (req, res) => {
+  const result = db.prepare("DELETE FROM jobs WHERE id = ?").run(req.params.id);
+  if (result.changes === 0) {
+    return res.status(404).json({ error: "Job not found." });
+  }
+  res.json({ success: true });
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

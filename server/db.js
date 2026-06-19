@@ -28,5 +28,22 @@ db.prepare(`
   )
 `).run();
 
+// New: table for jobs 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS jobs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    company TEXT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'fulltime',
+    description TEXT,
+    location TEXT,
+    salary TEXT,
+    url TEXT,
+    tags TEXT,
+    posted_by INTEGER,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
 
 module.exports = db;
