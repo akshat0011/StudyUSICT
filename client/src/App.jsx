@@ -1,4 +1,5 @@
-import { Routes, Route, NavLink } from "react-router";
+import { useState, useEffect } from "react";
+import { Routes, Route, NavLink, Link } from "react-router";
 import Logo from "./Logo";
 import Footer from "./Footer";
 import DashboardPage from "./DashboardPage";
@@ -6,6 +7,7 @@ import ResourceHubPage from "./ResourceHubPage";
 import AITutorPage from "./AITutorPage";
 import CareersPage from "./CareersPage";
 import GpaPage from "./GpaPage";
+import LoginPage from "./LoginPage";
 
 const tabs = [
   { to: "/", end: true, label: "Dashboard",
@@ -21,6 +23,24 @@ const tabs = [
 ];
 
 function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    fetch("http://localhost:3000/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => setUser(data.user))
+      .catch(() => localStorage.removeItem("token"));
+  }, []);
+
+  function handleLogout() {
+    localStorage.removeItem("token");
+    setUser(null);
+  }
+
   return (
     <div>
       <header className="topbar">
@@ -39,8 +59,19 @@ function App() {
               </NavLink>
             ))}
           </nav>
-        <div className="topbar-right">
+          <div className="topbar-right">
             <span className="api-badge"><span className="api-dot"></span>API ACTIVE</span>
+            {user ? (
+              <>
+                <span className="user-chip">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+                  {user.name}{user.role === "admin" ? " · Admin" : ""}
+                </span>
+                <button className="logout-btn" onClick={handleLogout}>Log out</button>
+              </>
+            ) : (
+              <Link to="/login" className="login-link">Log in</Link>
+            )}
           </div>
         </div>
       </header>
@@ -51,6 +82,7 @@ function App() {
         <Route path="/tutor" element={<AITutorPage />} />
         <Route path="/careers" element={<CareersPage />} />
         <Route path="/gpa" element={<GpaPage />} />
+        <Route path="/login" element={<LoginPage onLogin={setUser} />} />
       </Routes>
 
       <Footer />
