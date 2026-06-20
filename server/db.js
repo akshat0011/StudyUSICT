@@ -48,7 +48,25 @@ async function initDb() {
     )
   `);
 
-  console.log("Database ready — users, materials, and jobs tables are set up.");
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS subjects (
+      id SERIAL PRIMARY KEY,
+      year_scheme TEXT NOT NULL,
+      branch TEXT NOT NULL,
+      semester INTEGER NOT NULL,
+      route TEXT,
+      category TEXT,
+      code TEXT NOT NULL,
+      name TEXT NOT NULL,
+      lecture_hours INTEGER,
+      practical_hours INTEGER,
+      credits INTEGER,
+      units TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
+  console.log("Database ready — users, materials, jobs, and subjects tables are set up.");
 }
 
 pool.initDb = initDb; // the server calls this on startup (see index.js)
