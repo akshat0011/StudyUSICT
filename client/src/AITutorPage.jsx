@@ -1,3 +1,4 @@
+import { API_URL } from "./api";
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 
@@ -27,7 +28,7 @@ const messagesRef = useRef(null); // CHANGED
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:3000/tutor", {
+      const res = await fetch(API_URL + "/tutor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: newMessages, branch, semester }),

@@ -28,7 +28,7 @@ function MaterialsPage({ user }) {
 
   async function loadMaterials() {
     try {
-      const response = await fetch("http://localhost:3000/materials");
+      const response = await fetch(API_URL + "/materials");
       const data = await response.json();
       const list = Array.isArray(data) ? data : (data.materials || []);
       setMaterials(list);
@@ -46,7 +46,7 @@ function MaterialsPage({ user }) {
     setMessage("");
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch("http://localhost:3000/materials", {
+      const response = await fetch(API_URL + "/materials", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

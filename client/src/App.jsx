@@ -1,3 +1,4 @@
+import { API_URL } from "./api";
 import { useState, useEffect } from "react";
 import { Routes, Route, NavLink, Link } from "react-router";
 import Logo from "./Logo";
@@ -38,7 +39,7 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
-    fetch("http://localhost:3000/me", {
+    fetch(API_URL + "/me", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => (res.ok ? res.json() : Promise.reject()))

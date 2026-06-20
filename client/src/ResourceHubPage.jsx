@@ -1,3 +1,4 @@
+import { API_URL } from "./api";
 import { useState, useEffect } from "react";
 
 const branches = ["CSE", "IT", "ECE", "AIML", "AIDS"];
@@ -75,7 +76,7 @@ function ResourceHubPage({ user }) {
 
   // Load every material once, when the page first opens
   useEffect(() => {
-    fetch("http://localhost:3000/materials")
+    fetch(API_URL + "/materials")
       .then((res) => res.json())
       .then((data) => setMaterials(Array.isArray(data) ? data : data.materials || []))
       .catch(() => {});
@@ -122,7 +123,7 @@ function ResourceHubPage({ user }) {
     setSubmitting(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3000/materials", {
+      const res = await fetch(API_URL + "/materials", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -141,7 +142,7 @@ function ResourceHubPage({ user }) {
         setSubmitting(false);
         return;
       }
-      const listRes = await fetch("http://localhost:3000/materials");
+      const listRes = await fetch(API_URL + "/materials");
       const listData = await listRes.json();
       setMaterials(Array.isArray(listData) ? listData : listData.materials || []);
       setActiveTab(typeTabMap[formType]);
@@ -160,7 +161,7 @@ function ResourceHubPage({ user }) {
     if (!confirmed) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:3000/materials/${id}`, {
+      const res = await fetch(`${API_URL}/materials/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

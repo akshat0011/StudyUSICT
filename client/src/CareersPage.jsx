@@ -1,3 +1,4 @@
+import { API_URL } from "./api";
 import { useState, useEffect } from "react";
 
 // Turns a saved timestamp into "2 days ago", "last week", etc.
@@ -42,7 +43,7 @@ function CareersPage({ user }) {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:3000/jobs")
+    fetch(API_URL + "/jobs")
       .then((res) => res.json())
       .then((data) => setJobs(Array.isArray(data) ? data : data.jobs || []))
       .catch(() => {});
@@ -82,7 +83,7 @@ function CareersPage({ user }) {
     setSubmitting(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3000/jobs", {
+      const res = await fetch(API_URL + "/jobs", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -119,7 +120,7 @@ function CareersPage({ user }) {
     if (!confirmed) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:3000/jobs/${id}`, {
+      const res = await fetch(`${API_URL}/jobs/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

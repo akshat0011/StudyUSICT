@@ -1,3 +1,4 @@
+import { API_URL } from "./api";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { GoogleLogin } from "@react-oauth/google";
@@ -17,8 +18,8 @@ function LoginPage({ onLogin }) {
 
     const url =
       mode === "signup"
-        ? "http://localhost:3000/signup"
-        : "http://localhost:3000/login";
+        ? API_URL + "/signup"
+        : API_URL + "/login";
     const body =
       mode === "signup" ? { name, email, password } : { email, password };
 
@@ -50,7 +51,7 @@ function LoginPage({ onLogin }) {
   async function handleGoogleSuccess(credentialResponse) {
     setMessage("");
     try {
-      const res = await fetch("http://localhost:3000/auth/google", {
+      const res = await fetch(API_URL + "/auth/google", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ credential: credentialResponse.credential }),
