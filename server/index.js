@@ -241,6 +241,41 @@ app.delete("/jobs/:id", requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
+// list subjects, filtered by year scheme + branch + semester (public)
+app.get("/subjects", async (req, res) => {
+  const { year = "2024_and_after", branch, semester, route } = req.query;
+
+  const conditions = ["year_scheme = $1"];
+  const params = [year];
+  if (branch) {
+    params.push(branch);
+    conditions.push(`branch = $${params.length}`);
+  }
+  if (semester) {
+    params.push(parseInt(semester, 10));
+    conditions.push(`semester = $${params.length}`);
+  }
+  if (route) {
+    params.push(route);
+    conditions.push(`route = $${params.length}`);
+  }
+
+  try {
+    const result = await db.query(
+      `SELECT id, year_scheme, branch, semester, route, category, code, name,
+              lecture_hours, practical_hours, credits, units
+       FROM subjects
+       WHERE ${conditions.join(" AND ")}
+       ORDER BY semester, id`,
+      params
+    );
+    res.json({ subjects: result.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Couldn't load subjects." });
+  }
+});
+
 // ===== AI Tutor (unchanged — it never touches the database) =====
 const tutorSyllabus = {
   "CSE-3": `- CIC-201 Data Structures & Algorithms: arrays & stacks, linked lists & trees, BSTs & graphs (BFS, DFS, AVL, Kruskal, Prim), sorting & hashing.
