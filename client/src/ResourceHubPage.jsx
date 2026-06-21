@@ -512,7 +512,12 @@ function ResourceHubPage({ user }) {
           )}
           <div className="cat-list">
             {loadingSubjects ? (
-              <div className="tab-empty">Loading subjects…</div>
+              [0, 1, 2, 3, 4].map((i) => (
+                <div className="skeleton-card" key={i}>
+                  <div className="skeleton-line skeleton-code" />
+                  <div className="skeleton-line skeleton-name" />
+                </div>
+              ))
             ) : subjectsError ? (
               <div className="tab-empty">{subjectsError}</div>
             ) : visibleSubjects.length === 0 ? (

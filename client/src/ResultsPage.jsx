@@ -1,8 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // The official GGSIPU exam result portal — students log in there directly.
 // StudyUSICT never handles their credentials.
 const PORTAL_URL = "https://examweb.ggsipu.ac.in/web/login.jsp";
+
+// Smoothly animates a number toward `value` whenever it changes (and counts
+// up from 0 on first appearance). The live value is kept in a ref and driven
+// by requestAnimationFrame; we only force a re-render to paint it. Returns the
+// formatted number as text, so it works inside both SVG <text> and divs.
+function CountUp({ value, decimals = 0, duration = 550 }) {
+  const [display, setDisplay] = useState(0);
+  const liveRef = useRef(0); // latest animated value — read only inside the effect
+  const rafRef = useRef(0);
+
+  useEffect(() => {
+    const from = liveRef.current; // start from whatever is currently shown
+    const to = value;
+    let startTs;
+    const tick = (ts) => {
+      if (startTs === undefined) startTs = ts;
+      const p = Math.min(1, (ts - startTs) / duration);
+      const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+      const current = from + (to - from) * eased;
+      liveRef.current = current;
+      setDisplay(current);
+      if (p < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [value, duration]);
+
+  return Number(display).toFixed(decimals);
+}
 
 function ResultsPage() {
   // Each row = one semester's SGPA (credits optional, for an exact CGPA)
@@ -170,22 +199,24 @@ function ResultsPage() {
               transform="rotate(-90 90 90)"
             />
             <text x="90" y="86" textAnchor="middle" className="ring-value">
-              {hasData ? cgpa.toFixed(2) : "—"}
+              {hasData ? <CountUp value={cgpa} decimals={2} /> : "—"}
             </text>
             <text x="90" y="108" textAnchor="middle" className="ring-label">CGPA / 10</text>
           </svg>
 
           <div className="result-stats">
             <div className="result-stat">
-              <div className="result-stat-val">{hasData ? `${percentage.toFixed(2)}%` : "—"}</div>
+              <div className="result-stat-val">
+                {hasData ? (<><CountUp value={percentage} decimals={2} />%</>) : "—"}
+              </div>
               <div className="result-stat-label">Percentage</div>
             </div>
             <div className="result-stat">
-              <div className="result-stat-val">{totalCredits || "—"}</div>
+              <div className="result-stat-val">{totalCredits ? <CountUp value={totalCredits} /> : "—"}</div>
               <div className="result-stat-label">Credits</div>
             </div>
             <div className="result-stat">
-              <div className="result-stat-val">{valid.length || "—"}</div>
+              <div className="result-stat-val">{valid.length ? <CountUp value={valid.length} /> : "—"}</div>
               <div className="result-stat-label">Semesters</div>
             </div>
           </div>

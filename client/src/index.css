@@ -1811,3 +1811,50 @@ input:focus, select:focus, textarea:focus {
 }
 @keyframes barGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 
+/* Skeleton placeholders while the subject catalog loads */
+.skeleton-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.1rem 1.25rem;
+  background-color: var(--surface);
+}
+.skeleton-line {
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 37%, var(--surface-2) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+.skeleton-code { width: 38%; height: 10px; margin-bottom: 0.95rem; }
+.skeleton-name { width: 78%; height: 15px; }
+@keyframes shimmer {
+  from { background-position: 100% 0; }
+  to   { background-position: -100% 0; }
+}
+
+/* ===== Dark-mode glow tuning (glows read differently on black) ===== */
+[data-theme="dark"] .hero::before {
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.32), transparent 70%);
+}
+[data-theme="dark"] .btn-primary:hover,
+[data-theme="dark"] .access-btn:hover,
+[data-theme="dark"] .result-portal-btn:hover,
+[data-theme="dark"] .job-apply:hover,
+[data-theme="dark"] .modal-publish:hover,
+[data-theme="dark"] .post-job-btn:hover,
+[data-theme="dark"] .tutor-send:hover {
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.45);
+}
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.28);
+}
+/* plain black shadows vanish on a black background — deepen card hovers */
+[data-theme="dark"] .cat-card:hover,
+[data-theme="dark"] .job-card:hover,
+[data-theme="dark"] .unit-card:hover,
+[data-theme="dark"] .resource-row:hover,
+[data-theme="dark"] .result-stat:hover {
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55);
+}
+
