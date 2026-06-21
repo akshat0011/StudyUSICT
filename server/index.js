@@ -6,12 +6,41 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("./db");
 const cors = require("cors");
+const rateLimit = require("express-rate-limit"); // NEW
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// When deployed behind a hosting proxy (Render, Railway, etc.), set
+// TRUST_PROXY=1 so rate limiting sees the real client IP, not the proxy's.
+// Left off in local dev so X-Forwarded-For can't be spoofed to dodge limits.
+app.set("trust proxy", Number(process.env.TRUST_PROXY) || false); // NEW
+
+// CORS: in production, set CORS_ORIGIN to your site (comma-separated for more
+// than one). If it's unset (local dev) we fall back to allowing any origin.
+const corsOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim())
+  : undefined;
+app.use(cors(corsOrigins ? { origin: corsOrigins } : undefined)); // CHANGED
 app.use(express.json());
+
+// Rate limiters — stop brute-forcing logins and abuse of the AI tutor.
+// Auth: at most 20 attempts per IP every 15 minutes.
+const authLimiter = rateLimit({         // NEW
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many attempts. Please wait a few minutes and try again." },
+});
+// Tutor: at most 15 messages per IP per minute (the tutor calls a paid API).
+const tutorLimiter = rateLimit({        // NEW
+  windowMs: 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "You're sending messages too quickly — give it a moment." },
+});
 
 // gate: only lets a request through if it carries a valid token
 function requireAuth(req, res, next) {
@@ -51,16 +80,25 @@ app.get("/health", (req, res) => {
 });
 
 // create a new account
-app.post("/signup", async (req, res) => {
+app.post("/signup", authLimiter, async (req, res) => { // CHANGED: rate-limited
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
     return res.status(400).json({ error: "Name, email, and password are all required." });
+  }
+  // NEW: basic validation so we don't store junk / weak credentials
+  const cleanEmail = email.trim().toLowerCase();
+  const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail);
+  if (!emailLooksValid) {
+    return res.status(400).json({ error: "Please enter a valid email address." });
+  }
+  if (password.length < 8) {
+    return res.status(400).json({ error: "Password must be at least 8 characters." });
   }
   const hashedPassword = bcrypt.hashSync(password, 10);
   try {
     const result = await db.query(
       "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id",
-      [name, email, hashedPassword]
+      [name.trim(), cleanEmail, hashedPassword]
     );
     res.status(201).json({ message: "Account created successfully!", userId: result.rows[0].id });
   } catch (err) {
@@ -73,13 +111,14 @@ app.post("/signup", async (req, res) => {
 });
 
 // log in to an existing account
-app.post("/login", async (req, res) => {
+app.post("/login", authLimiter, async (req, res) => { // CHANGED: rate-limited
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password are required." });
   }
   try {
-    const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+    const cleanEmail = email.trim().toLowerCase(); // NEW: match how we store emails
+    const result = await db.query("SELECT * FROM users WHERE email = $1", [cleanEmail]);
     const user = result.rows[0];
     if (!user || !bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ error: "Invalid email or password." });
@@ -309,7 +348,7 @@ async function askGemini(systemPrompt, contents) {
   return { ok: false, status: 503 };
 }
 
-app.post("/tutor", async (req, res) => {
+app.post("/tutor", tutorLimiter, async (req, res) => { // CHANGED: rate-limited
   const { messages, branch, semester } = req.body;
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: "No messages provided." });
