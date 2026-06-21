@@ -370,11 +370,39 @@ app.delete("/subjects/:id", requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// ===== AI Tutor (unchanged — it never touches the database) =====
-const tutorSyllabus = {
-  "CSE-3": `- CIC-201 Data Structures & Algorithms: arrays & stacks, linked lists & trees, BSTs & graphs (BFS, DFS, AVL, Kruskal, Prim), sorting & hashing.
-- CIC-203 Database Management Systems: ER & relational model, SQL & design, normalization (1NF–BCNF), transactions & concurrency (ACID, locking).`,
-};
+// ===== AI Tutor =====
+// Build the syllabus text for a branch + semester straight from the subjects
+// table, so the tutor is grounded in the real catalog instead of a hardcoded
+// stub. Returns "" when nothing is on file yet (the prompt then falls back to
+// the model's general knowledge of the GGSIPU curriculum).
+async function getSyllabusText(branch, semester, yearScheme) {
+  const result = await db.query(
+    `SELECT code, name, credits, units
+       FROM subjects
+      WHERE year_scheme = $1 AND branch = $2 AND semester = $3
+      ORDER BY id`,
+    [yearScheme, branch, parseInt(semester, 10)]
+  );
+  if (result.rows.length === 0) return "";
+
+  return result.rows
+    .map((s) => {
+      let units = [];
+      try {
+        units = s.units ? JSON.parse(s.units) : [];
+      } catch {
+        units = [];
+      }
+      const unitText = Array.isArray(units) && units.length
+        ? units
+            .map((u, i) => `Unit ${i + 1}: ${u.title}${u.desc ? " — " + u.desc : ""}`)
+            .join("; ")
+        : "";
+      const credits = s.credits != null ? ` (${s.credits} credits)` : "";
+      return `- ${s.code} ${s.name}${credits}${unitText ? ": " + unitText : ""}`;
+    })
+    .join("\n");
+}
 
 async function askGemini(systemPrompt, contents) {
   const url =
@@ -404,11 +432,18 @@ async function askGemini(systemPrompt, contents) {
 }
 
 app.post("/tutor", tutorLimiter, async (req, res) => { // CHANGED: rate-limited
-  const { messages, branch, semester } = req.body;
+  const { messages, branch, semester, year } = req.body;
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: "No messages provided." });
   }
-  const syllabus = tutorSyllabus[`${branch}-${semester}`];
+  // Pull this semester's real syllabus from the database (default to the
+  // current scheme). On any DB hiccup, fall back to a generic prompt.
+  let syllabus = "";
+  try {
+    syllabus = await getSyllabusText(branch, semester, year || "2024_and_after");
+  } catch (err) {
+    console.error("Couldn't load syllabus for the tutor:", err.message);
+  }
   const systemPrompt = `You are StudyUSICT's AI study tutor for a student at USICT, GGSIPU (Guru Gobind Singh Indraprastha University), in the ${branch} branch, Semester ${semester}.
 ${syllabus ? "Their syllabus this semester includes:\n" + syllabus + "\n" : ""}Use your knowledge of the standard GGSIPU/USICT ${branch} curriculum for Semester ${semester} to ground your explanations and examples in the subjects this student is actually studying. Treat the syllabus as a reference to focus your help — not as a hard limit. Help them understand concepts, work through problems, write code and pseudocode, and prepare for university exams. You may also answer related academic and technical questions that aren't explicitly listed. Be clear and concise, and use simple language a student can follow.`;
 
