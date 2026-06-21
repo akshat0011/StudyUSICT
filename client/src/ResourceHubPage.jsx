@@ -74,6 +74,9 @@ function ResourceHubPage({ user }) {
 
   // Load subjects whenever the year scheme / branch / semester changes
   useEffect(() => {
+    // Intentionally flip to a loading state the moment the filters change,
+    // before the fetch resolves — a normal data-fetching pattern.
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setLoadingSubjects(true);
     setSubjectsError("");
     const url = `${API_URL}/subjects?year=${yearScheme}&branch=${branch}&semester=${semester}`;
@@ -171,7 +174,7 @@ function ResourceHubPage({ user }) {
       setFormTitle("");
       setFormUrl("");
       setSubmitting(false);
-    } catch (err) {
+    } catch {
       setFormError("Couldn't reach the server. Is the backend running?");
       setSubmitting(false);
     }
@@ -192,7 +195,7 @@ function ResourceHubPage({ user }) {
         return;
       }
       setMaterials((prev) => prev.filter((m) => m.id !== id));
-    } catch (err) {
+    } catch {
       alert("Couldn't reach the backend — is it running?");
     }
   }

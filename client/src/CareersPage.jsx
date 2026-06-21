@@ -109,7 +109,7 @@ function CareersPage({ user }) {
       setJobs((prev) => [data, ...prev]);
       setIsModalOpen(false);
       setSubmitting(false);
-    } catch (err) {
+    } catch {
       setFormError("Couldn't reach the server. Is the backend running?");
       setSubmitting(false);
     }
@@ -130,7 +130,7 @@ function CareersPage({ user }) {
         return;
       }
       setJobs((prev) => prev.filter((j) => j.id !== id));
-    } catch (err) {
+    } catch {
       alert("Couldn't reach the backend — is it running?");
     }
   }

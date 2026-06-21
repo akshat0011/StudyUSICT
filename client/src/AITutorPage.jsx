@@ -36,7 +36,7 @@ const messagesRef = useRef(null); // CHANGED
       const data = await res.json();
       const reply = res.ok ? data.reply : data.error || "Something went wrong. Please try again.";
       setMessages([...newMessages, { role: "model", content: reply }]);
-    } catch (err) {
+    } catch {
       setMessages([...newMessages, { role: "model", content: "Couldn't reach the tutor. Is the backend running?" }]);
     }
     setLoading(false);

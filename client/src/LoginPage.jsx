@@ -43,7 +43,7 @@ function LoginPage({ onLogin }) {
         onLogin(data.user);
         navigate("/");
       }
-    } catch (err) {
+    } catch {
       setMessage("Couldn't reach the server. Is the backend running?");
     }
   }
@@ -64,7 +64,7 @@ function LoginPage({ onLogin }) {
       localStorage.setItem("token", data.token);
       onLogin(data.user);
       navigate("/");
-    } catch (err) {
+    } catch {
       setMessage("Couldn't reach the server. Is the backend running?");
     }
   }
