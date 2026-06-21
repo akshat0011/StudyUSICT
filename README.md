@@ -24,8 +24,6 @@ A full-stack study portal for **USICT, GGSIPU**: syllabus, notes, previous-year 
 
 ## 📸 Screenshots
 
-> _Screenshots coming soon — drop your images in [`docs/screenshots/`](docs/screenshots) and they'll appear here._
-
 <table>
   <tr>
     <td width="50%"><img src="docs/screenshots/dashboard.png" alt="Dashboard"><br><div align="center"><b>Dashboard</b></div></td>
