@@ -1591,3 +1591,136 @@ body * {
   margin-bottom: 1.2rem;
 }
 
+/* ===== Results page ===== */
+.result-hero { margin-bottom: 1.75rem; }
+.result-hero-title { font-size: 2.25rem; font-weight: 800; line-height: 1.1; margin: 0.75rem 0 0.6rem; }
+.result-hero-text { color: var(--text-muted); font-size: 1.05rem; max-width: 720px; line-height: 1.6; }
+
+/* Official portal link-out (navy card) */
+.result-portal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  background-color: var(--navy);
+  border-radius: 18px;
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.75rem;
+}
+.result-portal .panel-title { color: #fff; margin-bottom: 0.55rem; }
+.result-portal .panel-title svg { color: #fff; }
+.result-portal-text p { color: rgba(255, 255, 255, 0.78); font-size: 0.95rem; max-width: 540px; line-height: 1.55; margin: 0; }
+.result-portal-text strong { color: #fff; }
+.result-portal-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--accent);
+  color: #fff;
+  padding: 0.85rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+.result-portal-btn:hover { background-color: var(--accent-hover); transform: translateY(-2px); }
+
+/* Analyzer layout */
+.result-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  margin-bottom: 1.5rem;
+}
+.result-input-head,
+.result-input-row {
+  display: grid;
+  grid-template-columns: 1fr 110px 90px 34px;
+  gap: 0.75rem;
+  align-items: center;
+}
+.result-input-head {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.5rem 0.2rem 0.6rem;
+}
+.result-input-row { margin-bottom: 0.6rem; }
+.result-sem-label { font-weight: 700; }
+.result-input-row input {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background-color: var(--surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+.result-input-row input:focus { outline: none; border-color: var(--accent); }
+.result-row-del {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.result-row-del:hover { color: #ef4444; background-color: var(--surface-2); }
+.result-add-sem {
+  margin-top: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.1rem;
+  border: 1px dashed var(--accent);
+  border-radius: 10px;
+  background-color: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.result-add-sem:hover { background-color: var(--surface-2); }
+
+/* Summary: CGPA ring + stats */
+.result-summary { display: flex; flex-direction: column; align-items: center; gap: 1.25rem; }
+.cgpa-ring-svg { width: 180px; height: 180px; }
+.ring-track { stroke: var(--surface-2); }
+.ring-fill { stroke: var(--accent); transition: stroke-dashoffset 0.5s ease; }
+.ring-value { font-size: 2.4rem; font-weight: 800; fill: var(--text); font-family: var(--font-sans); }
+.ring-label { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; fill: var(--text-muted); }
+.result-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; width: 100%; }
+.result-stat { text-align: center; background-color: var(--surface-2); border-radius: 12px; padding: 0.9rem 0.5rem; }
+.result-stat-val { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+.result-stat-label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); margin-top: 0.25rem; }
+.result-formula { font-size: 0.8rem; color: var(--text-muted); text-align: center; }
+.result-formula-note { display: block; margin-top: 0.2rem; font-size: 0.75rem; }
+
+/* SGPA-by-semester bar chart */
+.result-bars { width: 100%; height: auto; display: block; margin-top: 0.5rem; }
+.result-bars .grid-line { stroke: var(--border); stroke-width: 1; }
+.result-bars .grid-label { fill: var(--text-muted); font-family: var(--font-mono); font-size: 11px; }
+.result-bars .bar { fill: var(--accent); }
+.result-bars .bar.best { fill: var(--navy); }
+.result-bars .bar-value { fill: var(--text); font-weight: 700; font-size: 12px; font-family: var(--font-sans); }
+.result-bars .bar-label { fill: var(--text-muted); font-size: 12px; font-family: var(--font-mono); }
+.result-empty { color: var(--text-muted); text-align: center; padding: 2.5rem 1rem; }
+
+@media (max-width: 900px) {
+  .result-grid { grid-template-columns: 1fr; }
+  .result-portal { flex-direction: column; align-items: flex-start; }
+  .result-portal-btn { width: 100%; justify-content: center; }
+}
+

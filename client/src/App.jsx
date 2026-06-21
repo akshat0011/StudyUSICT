@@ -8,6 +8,7 @@ import ResourceHubPage from "./ResourceHubPage";
 import AITutorPage from "./AITutorPage";
 import CareersPage from "./CareersPage";
 import GpaPage from "./GpaPage";
+import ResultsPage from "./ResultsPage";
 import LoginPage from "./LoginPage";
 import AboutPage from "./AboutPage";
 
@@ -23,6 +24,8 @@ const tabs = [
     icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> },
   { to: "/gpa", label: "GPA Calculator",
     icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2 3 6 3s6-2 6-3v-5"/></svg> },
+  { to: "/results", label: "Results",
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg> },
   { to: "/about", label: "About",
     icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> },
 ];
@@ -117,6 +120,7 @@ function App() {
         <Route path="/tutor" element={<AITutorPage />} />
         <Route path="/careers" element={<CareersPage user={user} />} />
         <Route path="/gpa" element={<GpaPage />} />
+        <Route path="/results" element={<ResultsPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/login" element={<LoginPage onLogin={setUser} />} />
       </Routes>
