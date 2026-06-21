@@ -30,6 +30,7 @@ const tabs = [
 function App() {
   const [user, setUser] = useState(null);
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light"); // NEW
+  const [menuOpen, setMenuOpen] = useState(false); // NEW: mobile nav open/closed
 
   useEffect(() => {                                              // NEW
     document.documentElement.setAttribute("data-theme", theme);  // NEW
@@ -57,12 +58,13 @@ function App() {
       <header className="topbar">
         <div className="topbar-inner">
           <Logo />
-          <nav className="nav-tabs">
+          <nav className={menuOpen ? "nav-tabs open" : "nav-tabs"}>
             {tabs.map((tab) => (
               <NavLink
                 key={tab.to}
                 to={tab.to}
                 end={tab.end}
+                onClick={() => setMenuOpen(false)} // NEW: close menu after navigating
                 className={({ isActive }) => (isActive ? "nav-tab active" : "nav-tab")}
               >
                 {tab.icon}
@@ -94,6 +96,18 @@ function App() {
               <Link to="/login" className="login-link">Log in</Link>
             )}
           </div>
+          <button
+            className="nav-toggle"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            )}
+          </button>
         </div>
       </header>
 
